@@ -30,8 +30,8 @@ app = Flask(__name__, template_folder=tmpl_dir)
 #     DATABASEURI = "postgresql://zy2431:123123@34.73.36.248/project1"
 #
 # Modify these with your own credentials you received from TA!
-DATABASE_USERNAME = ""
-DATABASE_PASSWRD = ""
+DATABASE_USERNAME = "coman.andrei"
+DATABASE_PASSWRD = "7901"
 DATABASE_HOST = "34.148.107.47" # change to 34.28.53.86 if you used database 2 for part 2
 DATABASEURI = f"postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWRD}@{DATABASE_HOST}/project1"
 
@@ -173,6 +173,34 @@ def index():
 def another():
 	return render_template("another.html")
 
+
+# Example of adding new data to the database
+@app.route('/bookid_query', methods=['POST'])
+def bookid_query():
+    # accessing form inputs from user
+    query_id = request.form['book_id']
+    
+    params = {}
+    params["query_id"] = query_id
+    cursor = g.conn.execute(text('SELECT copy_id, title FROM book WHERE copy_id = (:query_id)'), params)
+
+    ids = []
+    titles = []
+    for result in cursor:
+        ids.append(result[0])
+        titles.append(result[1])
+    cursor.close()
+
+    context = dict(ids = ids, titles = titles)
+    return render_template("bookid.html", **context)
+
+@app.route('/bookid.html')
+def bookid():
+    ids = []
+    titles = []
+
+    context = dict(ids = ids, titles = titles)
+    return render_template("bookid.html", **context)
 
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])

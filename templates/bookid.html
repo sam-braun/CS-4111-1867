@@ -1,0 +1,32 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+
+<form method="POST" action="/bookid_query">
+	<p>Book-Id: <input type="text" name="book_id"> <input type="submit" value="Add"></p>
+</form>
+
+  <h1>Some famous Computer Scientists</h1>
+
+  <div>
+    {% for n in ids %}
+    <div>{{n}}</div>
+    {% endfor %}
+    {% for n in titles %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+<p><a href="another">Go to the other page</a></p>
+
+</body>
+
+
+</html>
