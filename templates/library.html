@@ -1,0 +1,41 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+
+<form method="POST" action="/library_query">
+	<p>Enter library name: <input type="text" name="name"> <input type="submit" value="Add"></p>
+</form>
+
+  <h1>Search for a library?</h1>
+
+  <div>
+    {% for n in names %}
+    <div>{{n}}</div>
+    {% endfor %}
+    {% for n in addresses %}
+    <div>{{n}}</div>
+    {% endfor %}
+    {% for n in hoursss %}
+    <div>{{n}}</div>
+    {% endfor %}
+    {% for n in specializations %}
+    <div>{{n}}</div>
+    {% endfor %}
+    {% for n in affiliations %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+<p><a href="another">Go to the other page</a></p>
+
+</body>
+
+
+</html>

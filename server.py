@@ -203,6 +203,50 @@ def bookid():
     return render_template("bookid.html", **context)
 
 # Example of adding new data to the database
+@app.route('/library_query', methods=['POST'])
+def library_query():
+    # accessing form inputs from user
+    query_id = request.form['name']
+    
+    params = {}
+    params["query_id"] = query_id
+    query = text("SELECT L.name, L.address, L.hours, L.specialization, U.name \
+                  FROM library L LEFT JOIN university U on L.affiliated_with = U.university_id \
+                  WHERE L.name LIKE " + "CONCAT(CONCAT('%', :query_id), '%')")
+    print(query)
+    cursor = g.conn.execute(query, params)
+
+    names = []
+    addresses = []
+    hoursss = []
+    specializations = []
+    affiliations = []
+    for result in cursor:
+        names.append(result[0])
+        addresses.append(result[1])
+        hoursss.append(result[2])
+        specializations.append(result[3])
+        affiliations.append(result[4])
+    cursor.close()
+
+    context = dict(names = names, addresses  = addresses, hoursss = hoursss, specializations = specializations, affiliations = affiliations)
+    return render_template("library.html", **context)
+
+@app.route('/library.html')
+def library():
+    
+    names = []
+    addresses = []
+    hoursss = []
+    specializations = []
+    affiliations = []
+
+    context = dict(names = names, addresses  = addresses, hoursss = hoursss, specializations = specializations, affiliations = affiliations)
+    return render_template("library.html", **context)
+
+
+
+# Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
 	# accessing form inputs from user
