@@ -183,9 +183,9 @@ def book_title_query():
 
     params = {}
     params["query_id"] = query_id
-    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS name, B.pub_year, L.library, B.isbn, R.reviews \
-                  SELECT book B, wrote R, library L, review R \
-                  WHERE WHERE B.title LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
+    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  SELECT book B, wrote R, library L \
+                  WHERE B.title LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
 
@@ -205,6 +205,71 @@ def book_title_query():
     context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
     return render_template("book.html", **context)
 
+
+@app.route('/book_author_query', methods=['POST'])
+def book_author_query():
+    # accessing form inputs from user
+
+    query_id = request.form['author_name']
+
+    params = {}
+    params["query_id"] = query_id
+    # THIS QUERY DOESN'T WORK
+    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  SELECT book B, wrote R, library L \
+                  WHERE B.author_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
+    print(query)
+    cursor = g.conn.execute(query, params)
+
+    titles = []
+    authors = []
+    dates = []
+    libraries = []
+    isbns = []
+    for result in cursor:
+        titles.append(result[0])
+        authors.append(result[1])
+        dates.append(result[2])
+        libraries.append(result[3])
+        isbns.append(result[4])
+    cursor.close()
+
+    context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
+    return render_template("book.html", **context)
+
+
+@app.route('/book_library_query', methods=['POST'])
+def book_library_query():
+    # accessing form inputs from user
+
+    query_id = request.form['library_name']
+
+    params = {}
+    params["query_id"] = query_id
+    # THIS QUERY DOESN'T WORK
+    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  SELECT book B, wrote R, library L \
+                  WHERE L.library_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
+    print(query)
+    cursor = g.conn.execute(query, params)
+
+    titles = []
+    authors = []
+    dates = []
+    libraries = []
+    isbns = []
+    for result in cursor:
+        titles.append(result[0])
+        authors.append(result[1])
+        dates.append(result[2])
+        libraries.append(result[3])
+        isbns.append(result[4])
+    cursor.close()
+
+    context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
+    return render_template("book.html", **context)
+
+
 @app.route('/book.html')
 def book():
 
@@ -218,15 +283,38 @@ def book():
     return render_template("book.html", **context)
 
 
+@app.route('/review_all', methods=['POST'])
+def review_all():
+
+    query = text("SELECT B.title, DATE_FORMAT(R.pub_date, %B %D %Y), R.text, R.stars \
+                  FROM book B, review R")
+    print(query)
+    cursor = g.conn.execute(query)
+
+    titles = []
+    dates = []
+    reviews = []
+    stars = []
+    for result in cursor:
+        titles.append(result[0])
+        dates.append(result[1])
+        reviews.append(result[2])
+        stars.append(result[3])
+    cursor.close()
+
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    return render_template("review.html", **context)
+
+
 # Example of adding new data to the database
 @app.route('/review_query', methods=['POST'])
 def review_query():
     # accessing form inputs from user
-    query_id = request.form['name']
+    query_id = request.form['title']
     
     params = {}
     params["query_id"] = query_id
-    query = text("SELECT B.title, R.pub_date, R.text, R.stars \
+    query = text("SELECT B.title, DATE_FORMAT(R.pub_date, '%B %D %Y'), R.text, R.stars \
                   FROM book B, review R \
                   WHERE B.copy_id = R.copy_id AND B.title LIKE " + "CONCAT(CONCAT('%', :query_id), '%')")
     print(query)
