@@ -175,32 +175,116 @@ def another():
 
 
 # Example of adding new data to the database
-@app.route('/bookid_query', methods=['POST'])
-def bookid_query():
+@app.route('/book_title_query', methods=['POST'])
+def book_title_query():
     # accessing form inputs from user
-    query_id = request.form['book_id']
+
+    query_id = request.form['title']
+
+    params = {}
+    params["query_id"] = query_id
+    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS name, B.pub_year, L.library, B.isbn, R.reviews \
+                  SELECT book B, wrote R, library L, review R \
+                  WHERE WHERE B.title LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
+    print(query)
+    cursor = g.conn.execute(query, params)
+
+    titles = []
+    authors = []
+    dates = []
+    libraries = []
+    isbns = []
+    for result in cursor:
+        titles.append(result[0])
+        authors.append(result[1])
+        dates.append(result[2])
+        libraries.append(result[3])
+        isbns.append(result[4])
+    cursor.close()
+
+    context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
+    return render_template("book.html", **context)
+
+@app.route('/book.html')
+def book():
+
+    titles = []
+    authors = []
+    dates = []
+    libraries = []
+    isbns = []
+
+    context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
+    return render_template("book.html", **context)
+
+
+# Example of adding new data to the database
+@app.route('/review_query', methods=['POST'])
+def review_query():
+    # accessing form inputs from user
+    query_id = request.form['name']
     
     params = {}
     params["query_id"] = query_id
-    cursor = g.conn.execute(text('SELECT copy_id, title FROM book WHERE copy_id = (:query_id)'), params)
+    query = text("SELECT B.title, R.pub_date, R.text, R.stars \
+                  FROM book B, review R \
+                  WHERE B.copy_id = R.copy_id AND B.title LIKE " + "CONCAT(CONCAT('%', :query_id), '%')")
+    print(query)
+    cursor = g.conn.execute(query, params)
 
-    ids = []
     titles = []
+    dates = []
+    reviews = []
+    stars = []
     for result in cursor:
-        ids.append(result[0])
-        titles.append(result[1])
+        titles.append(result[0])
+        dates.append(result[1])
+        reviews.append(result[2])
+        stars.append(result[3])
     cursor.close()
 
-    context = dict(ids = ids, titles = titles)
-    return render_template("bookid.html", **context)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    return render_template("review.html", **context)
 
-@app.route('/bookid.html')
-def bookid():
-    ids = []
+
+@app.route('/review.html')
+def review():
     titles = []
+    dates = []
+    reviews = []
+    stars = []
 
-    context = dict(ids = ids, titles = titles)
-    return render_template("bookid.html", **context)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    return render_template("review.html", **context)
+ 
+
+@app.route('/library_all', methods=['POST'])
+def library_all():
+   # query_id = request.form['name']
+
+   # params = {}
+   # params["query_id"] = query_id
+    query = text("SELECT L.name, L.address, L.hours, L.specialization, U.name \
+                  FROM library L LEFT JOIN university U on L.affiliated_with = U.university_id")
+    print(query)
+    cursor = g.conn.execute(query)
+
+    names = []
+    addresses = []
+    hoursss = []
+    specializations = []
+    affiliations = []
+    for result in cursor:
+        names.append(result[0])
+        addresses.append(result[1])
+        hoursss.append(result[2])
+        specializations.append(result[3])
+        affiliations.append(result[4])
+    cursor.close()
+
+    context = dict(names = names, addresses  = addresses, hoursss = hoursss, specializations = specializations, affiliations = affiliations)
+    return render_template("library.html", **context)
+
 
 # Example of adding new data to the database
 @app.route('/library_query', methods=['POST'])

@@ -8,23 +8,20 @@
 
 
 <body>
-
-<form method="POST" action="/bookid_query">
-	<p>Book-Id: <input type="text" name="book_id"> <input type="submit" value="Add"></p>
-</form>
-
   <h1>Some famous Computer Scientists</h1>
+  <div>{{data}}</div>
 
   <div>
-    {% for n in ids %}
-    <div>{{n}}</div>
-    {% endfor %}
-    {% for n in titles %}
+    {% for n in data %}
     <div>{{n}}</div>
     {% endfor %}
   </div>
 
 <p><a href="another">Go to the other page</a></p>
+
+<form method="POST" action="/add">
+<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
+</form>
 
 </body>
 

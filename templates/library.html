@@ -1,22 +1,29 @@
 <html>
   <style>
     body{ 
+      background-color: cornsilk;
       font-size: 15pt;
       font-family: arial;
     }
     table, th, td {
       border:1px solid black;
+      background-color: white;
     }
   </style>
 
+  <p> </p>
+  <center><h1><span style="font-family: fantasy">Welcome to KoolLib!</span></h1></center>
 
 <body>
 
 <form method="POST" action="/library_query">
-	<p>Enter library name: <input type="text" name="name"> <input type="submit" value="Add"></p>
+	<p>Enter library name: <input type="text" name="name"> <input type="submit" value="Search"></p>
 </form>
 
-  <h1>Search for a library?</h1>
+<form method="POST" action="/library_all">
+	<p>Click <button>this button</button> to see all libraries.</p>
+</form>
+
   <table style="width:100%">
     <tr>
       <th>Library Name</th>
@@ -35,7 +42,10 @@
     </tr>
     {% endfor %}
   </table>
-<p><a href="another">Go to the other page</a></p>
+
+  <p> </p>
+
+<button><center><a href="/">Return Home</a></center></button>
 
 </body>
 

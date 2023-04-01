@@ -1,0 +1,48 @@
+<html>
+  <style>
+    body{ 
+      background-color: cornsilk;
+      font-size: 15pt;
+      font-family: arial;
+    }
+    table, th, td {
+      border:1px solid black;
+      background-color: white;
+   }
+  </style>
+
+  <p> </p>
+  <center><h1><span style="font-family: fantasy">Welcome to KoolLib!</span></h1></center>
+
+<body>
+
+	<center><p><h2><span style="font-family: fantasy">Let's read some reviews!</span></h2></p></center>
+
+	<center><p><h3>To find reviews for a book, please enter that book's title below.</h3></p></center>
+
+	<form method="POST" action="/review_query">
+		<p>Title: <input type="text" name="title"> <input type="submit" value="Search!"></p>
+	</form>
+
+	<table style="width:100%">
+		<tr>
+			<th>Title</th>
+			<th>Date</th>
+			<th>Review</th>
+			<th>Stars</th>
+		</tr>
+		{% for n in range(titles|length) %}
+		<tr>
+			<td>{{titles[n]}}</td>
+			<td>{{dates[n]}}</td>
+			<td>{{reviews[n]}}</td>
+			<td>{{stars[n]}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+
+	<button><center><a href="/">Return Home</a></center></button>
+
+</body>
+
+</html>
