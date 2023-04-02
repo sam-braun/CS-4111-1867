@@ -5,6 +5,16 @@
       font-size: 15pt;
       font-family: arial;
     }
+    .column {
+    float: left;
+    width: 50%;
+    }
+
+    .row:after {
+    content: "";
+    display: table;
+    clear: both;
+    }
     table, th, td {
       border:1px solid black;
       background-color: white;
@@ -19,28 +29,32 @@
 
 	<center><h2><span style="font-family: fantasy">Let's find some books!</span></h2><center>
 
-			<center><p><h3>There are many ways to search!</h3></p></center>
+<div class="row">
+        <div class="column" style="background-color: cornsilk;">
+            <h3>There are many ways to search!</h3>
+	    <p>
 
-<form method="POST" action="/book_title_query">
-	<p>Title: <input type="text" name="title"> <input type="submit" value="Search!"></p>
-</form>
+	<form method="POST" action="/book_title_query">
+		<p>Title: <input type="text" name="title"> <input type="submit" value="Search!"></p>
+	</form>
 
-<form method="POST" action="/book_author_query">
-        <p>Author Name: <input type="text" name="author_name"> <input type="submit" value="Search!"></p>
-</form>
+	<form method="POST" action="/book_author_query">
+	        <p>Author Name: <input type="text" name="author_name"> <input type="submit" value="Search!"></p>
+	</form>
 
-<form method="POST" action="/book_library_query">
-        <p>Library: <input type="text" name="library_name"> <input type="submit" value="Search!"></p>
-</form>
+	<form method="POST" action="/book_library_query">
+		<p>Library: <input type="text" name="library_name"> <input type="submit" value="Search!"></p>
+	</form>
 
+	    </p>
+        </div>
+        <div class="column" style="background-color: cornsilk;">
+            <h3>Would you like to read the reviews of a book?</h3>
+            <p><button><center><a href="review.html">Find Reviews</a></center></button></p>
+        </div>
+    </div>
 
-	<p> </p>
-
-	<center><p><h3>Would you like to read the reviews of a book?</h3></p></center>
-
-	<button><center><a href="review.html">Find Reviews</a></center></button>
-
-	<p> </p>
+    <p> </p>
 
 	 <table style="width:100%">
     <tr>

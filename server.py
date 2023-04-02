@@ -183,8 +183,8 @@ def book_title_query():
 
     params = {}
     params["query_id"] = query_id
-    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  SELECT book B, wrote R, library L \
+    query = text("SELECT B.title, (CONCAT(CONCAT(A.first_name, ' '), A.last_name)) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  FROM book B, wrote R, library L \
                   WHERE B.title LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
@@ -215,8 +215,8 @@ def book_author_query():
     params = {}
     params["query_id"] = query_id
     # THIS QUERY DOESN'T WORK
-    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  SELECT book B, wrote R, library L \
+    query = text("SELECT B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  FROM book B, wrote R, library L \
                   WHERE B.author_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
@@ -247,8 +247,8 @@ def book_library_query():
     params = {}
     params["query_id"] = query_id
     # THIS QUERY DOESN'T WORK
-    query = text("FROM B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  SELECT book B, wrote R, library L \
+    query = text("SELECT B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
+                  FROM book B, wrote R, library L \
                   WHERE L.library_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
@@ -283,11 +283,10 @@ def book():
     return render_template("book.html", **context)
 
 
-@app.route('/review_all', methods=['POST'])
+@app.route('/review_all', methods=['GET'])
 def review_all():
-
-    query = text("SELECT B.title, DATE_FORMAT(R.pub_date, %B %D %Y), R.text, R.stars \
-                  FROM book B, review R")
+    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
+                  FROM review R LEFT JOIN book B on B.copy_id = R.copy_id")
     print(query)
     cursor = g.conn.execute(query)
 
@@ -295,14 +294,16 @@ def review_all():
     dates = []
     reviews = []
     stars = []
+    usernames = []
     for result in cursor:
         titles.append(result[0])
         dates.append(result[1])
         reviews.append(result[2])
         stars.append(result[3])
+        usernames.append(result[4])
     cursor.close()
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
     return render_template("review.html", **context)
 
 
@@ -314,9 +315,9 @@ def review_query():
     
     params = {}
     params["query_id"] = query_id
-    query = text("SELECT B.title, DATE_FORMAT(R.pub_date, '%B %D %Y'), R.text, R.stars \
-                  FROM book B, review R \
-                  WHERE B.copy_id = R.copy_id AND B.title LIKE " + "CONCAT(CONCAT('%', :query_id), '%')")
+    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
+                  FROM review R LEFT JOIN book B on B.copy_id = R.copy_id \
+                  WHERE LOWER(B.title) LIKE " + "CONCAT(CONCAT('%', LOWER(:query_id)), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
 
@@ -324,14 +325,16 @@ def review_query():
     dates = []
     reviews = []
     stars = []
+    usernames = []
     for result in cursor:
         titles.append(result[0])
         dates.append(result[1])
         reviews.append(result[2])
         stars.append(result[3])
+        usernames.append(result[4])
     cursor.close()
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
     return render_template("review.html", **context)
 
 
@@ -341,8 +344,9 @@ def review():
     dates = []
     reviews = []
     stars = []
+    usernames = []
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
     return render_template("review.html", **context)
  
 
@@ -384,7 +388,7 @@ def library_query():
     params["query_id"] = query_id
     query = text("SELECT L.name, L.address, L.hours, L.specialization, U.name \
                   FROM library L LEFT JOIN university U on L.affiliated_with = U.university_id \
-                  WHERE L.name LIKE " + "CONCAT(CONCAT('%', :query_id), '%')")
+                  WHERE LOWER(L.name) LIKE " + "CONCAT(CONCAT('%', LOWER(:query_id)), '%')")
     print(query)
     cursor = g.conn.execute(query, params)
 
