@@ -318,11 +318,24 @@ def review_add_add():
 
     return redirect('/review_all')
 
+@app.route('/invalid.html', methods=['GET'])
+def invalid():
+    context = dict()
+    return render_template("invalid.html", **context)
+
 @app.route('/review_add', methods=['POST'])
 def review_add():
     username = request.form['username']
     params = {}
     params['username'] = username
+
+    query = text("SELECT COUNT(*) \
+                  FROM client \
+                  WHERE username = :username")
+    cursor = g.conn.execute(query, params)
+    if cursor.fetchone()[0] == 0:
+        return redirect('/invalid.html')
+
     query = text("SELECT B.title, B.copy_id \
                   FROM book B, borrows W, client C \
                   WHERE B.copy_id = W.copy_id \
