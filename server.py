@@ -306,6 +306,43 @@ def book():
     context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
     return render_template("book.html", **context)
 
+@app.route('/review_add_add', methods=['POST'])
+def review_add_add():
+    params = {}
+    params["copy_id" ] = request.form['copy']
+    params["username"] = request.form['username']
+    params["text"] = request.form['review']
+    params["stars"] = int(request.form['stars'])
+    g.conn.execute(text('INSERT INTO review VALUES (:copy_id, :username, current_timestamp, :text, :stars)'), params)
+    g.conn.commit()
+
+    return redirect('/review_all')
+
+@app.route('/review_add', methods=['POST'])
+def review_add():
+    username = request.form['username']
+    params = {}
+    params['username'] = username
+    query = text("SELECT B.title, B.copy_id \
+                  FROM book B, borrows W, client C \
+                  WHERE B.copy_id = W.copy_id \
+                    AND W.username = C.username \
+                    AND C.username = :username")
+    cursor = g.conn.execute(query, params)
+
+    titles = []
+    ids = []
+    for result in cursor:
+        titles.append(result[0])
+        ids.append(result[1])
+    cursor.close()
+    context = dict(titles = titles, ids = ids, username = username)
+    return render_template("review_add.html", **context)
+
+@app.route('/review_login', methods=['GET'])
+def review_login():
+    context = dict()
+    return render_template("review_login.html", **context)
 
 @app.route('/review_all', methods=['GET'])
 def review_all():
@@ -320,7 +357,7 @@ def review_all():
     usernames = []
     for result in cursor:
         titles.append(result[0])
-        dates.append(result[1])
+        dates.append(result[1].strftime("%B %d %Y"))
         reviews.append(result[2])
         stars.append(result[3])
         usernames.append(result[4])
@@ -350,7 +387,7 @@ def review_query():
     usernames = []
     for result in cursor:
         titles.append(result[0])
-        dates.append(result[1])
+        dates.append(result[1].strftime("%B %d %Y"))
         reviews.append(result[2])
         stars.append(result[3])
         usernames.append(result[4])

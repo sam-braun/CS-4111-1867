@@ -1,0 +1,46 @@
+<html>
+  <style>
+    body{ 
+      background-color: azure;
+      font-size: 15pt;
+      font-family: arial;
+    }
+    /*table, th, td {
+      border:1px solid black;
+      background-color: white;
+   }*/
+  </style>
+
+  <p> </p>
+  <center><h1><span style="font-family: fantasy">Welcome to KoolLib!</span></h1></center>
+
+<body>
+
+	<center><p><h2><span style="font-family: fantasy">Let's write a book review!</span></h2></p></center>
+
+
+	<form method="POST" action="/review_add_add">
+		<center><p> 
+			   <select name="username" required>
+				   <option value="{{username}}">{{username}}</option>
+		     	   </select>
+			   <select name="copy" required>
+			           {% for n in range(titles|length) %} 
+				   <option value="{{ids[n]}}">{{titles[n]}} (Copy {{ids[n]}})</option>
+				   {% endfor %}
+		     	   </select>
+			   Review: <input type="text" name="review" required>
+			   Stars: <input type="number" min = "0" max = "5" name = "stars" required> 
+			   <input type="submit" value="Post Review!">
+		</p></center>
+	</form>
+
+	<p> </p>
+	<center><button><a href="/review_all">View All Reviews</a></button></center>
+
+	<p> </p>
+	<center><button><a href="/">Return Home</a></button></center>
+
+</body>
+
+</html>
