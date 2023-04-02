@@ -26,25 +26,7 @@
 	<center><button><a href="/review_login">Add a Review</a></button></center>
 
 	<center><table style="width:50%;">
-		<!--
-		<tr>
-			<th>Title</th>
-			<th>Date</th>
-			<th>Review</th>
-			<th>Stars</th>
-			<th>Username</th>
-		</tr>
-		-->
 		{% for n in range(titles|length) %}
-		<!--
-		<tr>
-			<td>{{titles[n]}}</td>
-			<td>{{dates[n]}}</td>
-			<td>{{reviews[n]}}</td>
-			<td>{{stars[n]}}</td>
-			<td>{{usernames[n]}}</td>
-		</tr>
-		-->
 		<tr>
 			<td><img src="https://w7.pngwing.com/pngs/178/595/png-transparent-user-profile-computer-icons-login-user-avatars.png" 
 		 		 style="height:2em;"></td>
@@ -66,6 +48,13 @@
 					Reviewed <b>{{titles[n]}}</b> on {{dates[n]}}</td>
 				</tr>
 			    </table>
+			</td>
+			<td><form method="POST" action="/review_delete">
+					<input type = "hidden" name = "username" value = "{{usernames[n]}}"/>
+					<input type = "hidden" name = "copy_id" value = "{{ids[n]}}"/>
+					<input type = "hidden" name = "pub_date" value = "{{bigdates[n]}}"/>
+					<input type = "submit" value = "Remove">
+			    </form>
 			</td>
 		<tr>
 		<tr>

@@ -318,6 +318,37 @@ def review_add_add():
 
     return redirect('/review_all')
 
+@app.route('/review_delete_final', methods=['POST'])
+def review_delete_final():
+    params = {}
+    params['admin_username'] = request.form['admin_username']
+    query = text("SELECT COUNT(*) \
+                  FROM admin \
+                  WHERE username = :admin_username")
+    cursor = g.conn.execute(query, params)
+    if cursor.fetchone()[0] == 0:
+        return redirect('/invalid.html')
+
+    params = {}
+    params["client_username"] = request.form['client_username']
+    params["admin_username"] = request.form['admin_username']
+    params["copy_id"] = request.form['copy_id']
+    params["pub_date"] = request.form['pub_date']
+
+    query = text("DELETE FROM review \
+                  WHERE username = :client_username \
+                    AND copy_id = :copy_id \
+                    AND pub_date = :pub_date")
+    cursor = g.conn.execute(query, params)
+    g.conn.commit()
+
+    return redirect("review.html")
+
+@app.route('/review_delete', methods=['POST'])
+def review_delete():
+    context = dict(client_username = request.form['username'], copy_id = request.form['copy_id'], pub_date = request.form['pub_date'])
+    return render_template("review_delete_login.html", **context)
+
 @app.route('/invalid.html', methods=['GET'])
 def invalid():
     context = dict()
@@ -359,24 +390,28 @@ def review_login():
 
 @app.route('/review_all', methods=['GET'])
 def review_all():
-    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
+    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username, B.copy_id \
                   FROM review R LEFT JOIN book B on B.copy_id = R.copy_id")
     cursor = g.conn.execute(query)
 
     titles = []
     dates = []
+    bigdates = []
     reviews = []
     stars = []
     usernames = []
+    ids = []
     for result in cursor:
         titles.append(result[0])
         dates.append(result[1].strftime("%B %d %Y"))
+        bigdates.append(result[1])
         reviews.append(result[2])
         stars.append(result[3])
         usernames.append(result[4])
+        ids.append(result[5])
     cursor.close()
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames, ids = ids, bigdates = bigdates)
     return render_template("review.html", **context)
 
 
@@ -388,25 +423,29 @@ def review_query():
     
     params = {}
     params["query_id"] = query_id
-    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
+    query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username, B.copy_id \
                   FROM review R LEFT JOIN book B on B.copy_id = R.copy_id \
                   WHERE LOWER(B.title) LIKE " + "CONCAT(CONCAT('%', LOWER(:query_id)), '%')")
     cursor = g.conn.execute(query, params)
 
     titles = []
     dates = []
+    bigdates = []
     reviews = []
     stars = []
     usernames = []
+    ids = []
     for result in cursor:
         titles.append(result[0])
         dates.append(result[1].strftime("%B %d %Y"))
+        bigdates.append(result[1])
         reviews.append(result[2])
         stars.append(result[3])
         usernames.append(result[4])
+        ids.append(result[5])
     cursor.close()
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames, ids = ids, bigdates = bigdates)
     return render_template("review.html", **context)
 
 
@@ -417,8 +456,10 @@ def review():
     reviews = []
     stars = []
     usernames = []
+    ids = []
+    bigdates = []
 
-    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames)
+    context = dict(titles = titles, dates = dates, reviews = reviews, stars = stars, usernames = usernames, ids = ids, bigdates = bigdates)
     return render_template("review.html", **context)
  
 

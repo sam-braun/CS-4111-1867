@@ -1,0 +1,40 @@
+<html>
+  <style>
+    body{ 
+      background-color: azure;
+      font-size: 15pt;
+      font-family: arial;
+    }
+    /*table, th, td {
+      border:1px solid black;
+      background-color: white;
+   }*/
+  </style>
+
+  <p> </p>
+  <center><h1><span style="font-family: fantasy">Welcome to KoolLib!</span></h1></center>
+
+<body>
+
+	<center><p><h2><span style="font-family: fantasy">Let's write a book review!</span></h2></p></center>
+
+
+	<form method="POST" action="/review_delete_final">
+		<center><p> 
+			<input type = "hidden" name = "client_username" value = "{{client_username}}"/>
+			<input type = "hidden" name = "copy_id" value = "{{copy_id}}"/>
+			<input type = "hidden" name = "pub_date" value = "{{pub_date}}"/>
+			Admin username: <input type="text" name="admin_username" required>
+			<input type="submit" value="Login">
+		</p></center>
+	</form>
+
+	<p> </p>
+	<center><button><a href="/review_all">View All Reviews</a></button></center>
+
+	<p> </p>
+	<center><button><a href="/">Return Home</a></button></center>
+
+</body>
+
+</html>
