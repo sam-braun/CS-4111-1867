@@ -169,10 +169,6 @@ def index():
 # Notice that the function name is another() rather than index()
 # The functions for each app.route need to have different names
 #
-@app.route('/another')
-def another():
-	return render_template("another.html")
-
 
 # Example of adding new data to the database
 @app.route('/book_title_query', methods=['POST'])
@@ -183,10 +179,18 @@ def book_title_query():
 
     params = {}
     params["query_id"] = query_id
-    query = text("SELECT B.title, (CONCAT(CONCAT(A.first_name, ' '), A.last_name)) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  FROM book B, wrote R, library L \
-                  WHERE B.title LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
-    print(query)
+    query = text("SELECT B.title, \
+                         STRING_AGG(DISTINCT CONCAT(CONCAT(A.first_name, ' '), A.last_name), ', ') AS authors, \
+                         B.pub_year, \
+                         STRING_AGG(DISTINCT L.name, ', ') AS available_at, \
+                         B.isbn \
+                  FROM book B, wrote W, author A, library L \
+                  WHERE B.copy_id = W.copy_id \
+                    AND W.author_id = A.author_id \
+                    AND B.owned_by = L.library_id \
+                    AND LOWER(B.title) LIKE CONCAT(CONCAT('%', LOWER(:query_id)), '%') \
+                  GROUP BY B.isbn, B.title, B.pub_year")
+
     cursor = g.conn.execute(query, params)
 
     titles = []
@@ -214,11 +218,22 @@ def book_author_query():
 
     params = {}
     params["query_id"] = query_id
-    # THIS QUERY DOESN'T WORK
-    query = text("SELECT B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  FROM book B, wrote R, library L \
-                  WHERE B.author_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
-    print(query)
+    query = text("SELECT B.title, \
+                         STRING_AGG(DISTINCT CONCAT(CONCAT(A.first_name, ' '), A.last_name), ', ') AS authors, \
+                         B.pub_year, \
+                         STRING_AGG(DISTINCT L.name, ', ') AS available_at, \
+                         B.isbn \
+                  FROM book B, wrote W, author A, library L \
+                  WHERE B.copy_id = W.copy_id \
+                    AND W.author_id = A.author_id \
+                    AND B.owned_by = L.library_id \
+                    AND EXISTS (SELECT * \
+                                FROM book B2, wrote W2, author A2 \
+                                WHERE B2.copy_id = W2.copy_id \
+                                  AND W2.author_id = A2.author_id \
+                                  AND LOWER(CONCAT(CONCAT(A2.first_name, ' '), A2.last_name)) LIKE CONCAT(CONCAT('%', LOWER(:query_id)), '%') \
+                                  AND B2.isbn = B.isbn) \
+                  GROUP BY B.isbn, B.title, B.pub_year")
     cursor = g.conn.execute(query, params)
 
     titles = []
@@ -246,11 +261,22 @@ def book_library_query():
 
     params = {}
     params["query_id"] = query_id
-    # THIS QUERY DOESN'T WORK
-    query = text("SELECT B.title, (A.first_name + ‘ ‘ + A.last_name) AS author_name, B.pub_year, L.name AS library_name, B.isbn \
-                  FROM book B, wrote R, library L \
-                  WHERE L.library_name LIKE  " + "CONCAT(CONCAT('%', :query_id), '%')")
-    print(query)
+    query = text("SELECT B.title, \
+                         STRING_AGG(DISTINCT CONCAT(CONCAT(A.first_name, ' '), A.last_name), ', ') AS authors, \
+                         B.pub_year, \
+                         STRING_AGG(DISTINCT L.name, ', ') AS available_at, \
+                         B.isbn \
+                  FROM book B, wrote W, author A, library L \
+                  WHERE B.copy_id = W.copy_id \
+                    AND W.author_id = A.author_id \
+                    AND B.owned_by = L.library_id \
+                    AND EXISTS (SELECT * \
+                                FROM book B2, library L2 \
+                                WHERE B2.owned_by = L2.library_id \
+                                  AND LOWER(L2.name) LIKE CONCAT(CONCAT('%', LOWER(:query_id)), '%') \
+                                  AND B2.isbn = B.isbn) \
+                  GROUP BY B.isbn, B.title, B.pub_year")
+
     cursor = g.conn.execute(query, params)
 
     titles = []
@@ -269,10 +295,8 @@ def book_library_query():
     context = dict(titles = titles, authors = authors, dates = dates, libraries = libraries, isbns = isbns)
     return render_template("book.html", **context)
 
-
 @app.route('/book.html')
 def book():
-
     titles = []
     authors = []
     dates = []
@@ -287,7 +311,6 @@ def book():
 def review_all():
     query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
                   FROM review R LEFT JOIN book B on B.copy_id = R.copy_id")
-    print(query)
     cursor = g.conn.execute(query)
 
     titles = []
@@ -318,7 +341,6 @@ def review_query():
     query = text("SELECT B.title, R.pub_date, R.text, R.stars, R.username \
                   FROM review R LEFT JOIN book B on B.copy_id = R.copy_id \
                   WHERE LOWER(B.title) LIKE " + "CONCAT(CONCAT('%', LOWER(:query_id)), '%')")
-    print(query)
     cursor = g.conn.execute(query, params)
 
     titles = []
@@ -352,13 +374,8 @@ def review():
 
 @app.route('/library_all', methods=['POST'])
 def library_all():
-   # query_id = request.form['name']
-
-   # params = {}
-   # params["query_id"] = query_id
     query = text("SELECT L.name, L.address, L.hours, L.specialization, U.name \
                   FROM library L LEFT JOIN university U on L.affiliated_with = U.university_id")
-    print(query)
     cursor = g.conn.execute(query)
 
     names = []
@@ -389,7 +406,6 @@ def library_query():
     query = text("SELECT L.name, L.address, L.hours, L.specialization, U.name \
                   FROM library L LEFT JOIN university U on L.affiliated_with = U.university_id \
                   WHERE LOWER(L.name) LIKE " + "CONCAT(CONCAT('%', LOWER(:query_id)), '%')")
-    print(query)
     cursor = g.conn.execute(query, params)
 
     names = []
@@ -410,7 +426,6 @@ def library_query():
 
 @app.route('/library.html')
 def library():
-    
     names = []
     addresses = []
     hoursss = []

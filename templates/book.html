@@ -64,10 +64,10 @@
       <th>Library</th>
       <th>ISBN</th>
     </tr>
-    {% for n in range(title|length) %}
+    {% for n in range(titles|length) %}
     <tr>
       <td>{{titles[n]}}</td>
-      <td>{{names[n]}}</td>
+      <td>{{authors[n]}}</td>
       <td>{{dates[n]}}</td>
       <td>{{libraries[n]}}</td>
       <td>{{isbns[n]}}</td>
